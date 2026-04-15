@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="toast" class="toast">
+        <p>Menu berhasil ditambahkan! ✓</p>
+    </div>
     <header>
         <div class="header-top">
             <h1>Seduh</h1>
@@ -26,7 +29,7 @@
         </section>
         <section id="filterBar" class="filter-bar">
             <ul>
-                <li class="active">Semua</li>
+                <li>Semua</li>
                 <li>Coffee</li>
                 <li>Non-Coffee</li>
                 <li>Snack</li>
@@ -34,11 +37,11 @@
             </ul>
         </section>
         <section id="listProduk" class="list-produk">
-            <div class="menu-wrapper">
+            <!-- <div class="menu-wrapper">
                 <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
                 <div class="menu-content">
                     <div class="menu-title">
-                        <h3>Seduh Signature</h3>
+                        <h3>Seduh Signature </h3> 
                         <p>Espresso,oat-milk</p>
                     </div>
                     <div class="menu-action">
@@ -59,18 +62,18 @@
                         <button class="btn-tambah">+</button>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </section>
     </main>
 
-    <div class="cart-bar">
+    <div class="cart-bar hidden">
         <div class="cart-content">
             <div class="lihat-keranjang">
-                <p id="jumlahItem">3</p> 
+                <p id="jumlahItem">0</p> 
                 <p>Lihat Keranjang</p>
             </div>
             <div class="total-harga">
-                <p id="totalHarga">Rp. 62.000</p>
+                <p id="totalHarga">Rp. 0</p>
             </div>
         </div>
     </div>
@@ -81,10 +84,10 @@
         <div class="handle-modal">
             <div class="sheet-header">
                 <p>Keranjang Kamu</p>
-                <button id="tambahItem" class="cart-btn-tambah-item">+ Tambah Item</button>
+                <button id="tambahItemCart" class="cart-btn-tambah-item">+ Tambah Item</button>
             </div>
             <div class="cart-items">
-                <div class="cart-item">
+                <!-- <div class="cart-item">
                     <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
                     <div class="cart-item-content">
                         <div class="cart-item-title">
@@ -111,20 +114,56 @@
                             <button class="cart-btn-tambah">+</button>
                         </div>
                     </div>
-                </div>
+                </div> -->
+            
             </div>
             <div class="note-box">
                 <input type="text" placeholder="Tambah catatan untuk dapur (misal : Less sugar, No ice)">
             </div>
             <div class="total-row">
                 <p style="color:var(--text-dark)">Total Pembayaran</p>
-                <p style="color:var(--terra)">Rp. 62.000</p>
+                <p id="totalPembelanjaan" style="color:var(--terra)">Rp. 0</p>
             </div>
             <div class="cta">
                 <button id="btnCta" class="btn-cta">Pesan Sekarang</button>
             </div>
+            <div class="modal-konfirmasi">
+                <div class="modal-konfirmasi-content">
+                    <div class="konfirmasi-header">
+                        <h3>Konfirmasi Pesanan Anda</h3>
+                        <button id="btnTutupKonfirmasi">✕</button>
+                    </div>
+                    <!-- Ringkasan order -->
+                    <div id="ringkasanOrder">
+                        <p>Pesanan Kamu adalah a b c d</p>
+                        <!-- diisi JS nanti -->
+                    </div>
+                    <div class="pilih-metode-bayar-container">
+                        <p>Pilih Metode Pembayaran</p>
+                        <div class="pilih-metode-bayar" >
+                            <button class="qris">QRIS</button>
+                            <button class="cash">Cash</button>
+                        </div>
+                    </div>
+                    
+                    <p class="total-pembayaran">Total belanja kamu adalah : <span id="totalPembayaran">Rp. 0</span> </p>
+                        
+                    <!-- <div class="btn-action-pembayaran">
+                        <button class="lanjutkan">Konfirmasi</button>
+                        <button class="batal">Batalkan</button>
+                    </div> -->
+                    <!-- Metode pembayaran -->
+                    <!-- kamu isi sendiri! -->
+
+                    <!-- Total -->
+                    <!-- kamu isi sendiri! -->
+
+                    <!-- Tombol konfirmasi -->
+                    <!-- kamu isi sendiri! -->
+                </div>
+            </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
