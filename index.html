@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Taruh di <head> HTML, sebelum link style.css -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces&family=Plus+Jakarta+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <title>Seduh</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <h1>Seduh</h1>
+            <span class="nomor-meja">Meja 1</span>
+        </div>
+        <p class="header-sub">Senin, 13 April 2026</p>
+    </header>
+    <main>
+        <section id="promoBar" class="promo-bar">
+            <div class="promo-title">
+                <h2>Promo Hari Ini</h2>
+                <p>Beli 2 Minuman, gratis snack</p>
+            </div>
+            <button id="lihatPromo" class="lihat-promo">Lihat</button>
+        </section>
+        <section id="filterBar" class="filter-bar">
+            <ul>
+                <li class="active">Semua</li>
+                <li>Coffee</li>
+                <li>Non-Coffee</li>
+                <li>Snack</li>
+                <li>Dessert</li>
+            </ul>
+        </section>
+        <section id="listProduk" class="list-produk">
+            <div class="menu-wrapper">
+                <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
+                <div class="menu-content">
+                    <div class="menu-title">
+                        <h3>Seduh Signature</h3>
+                        <p>Espresso,oat-milk</p>
+                    </div>
+                    <div class="menu-action">
+                        <p>Rp.30.000</p>
+                        <button class="btn-tambah">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <img src="https://placehold.co/64x64" alt="Foto Matcha Latte">
+                <div class="menu-content">
+                    <div class="menu-title">
+                        <h3>Matcha Latte</h3>
+                        <p>Matcha premium, susu segar</p>
+                    </div>
+                    <div class="menu-action">
+                        <p>Rp.32.000</p>
+                        <button class="btn-tambah">+</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="cart-bar">
+        <div class="cart-content">
+            <div class="lihat-keranjang">
+                <p id="jumlahItem">3</p> 
+                <p>Lihat Keranjang</p>
+            </div>
+            <div class="total-harga">
+                <p id="totalHarga">Rp. 62.000</p>
+            </div>
+        </div>
+    </div>
+    <div class="overlay">
+        <!-- Isi Overlay -->
+    </div>
+    <div class="modal ">
+        <div class="handle-modal">
+            <div class="sheet-header">
+                <p>Keranjang Kamu</p>
+                <button id="tambahItem" class="cart-btn-tambah-item">+ Tambah Item</button>
+            </div>
+            <div class="cart-items">
+                <div class="cart-item">
+                    <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
+                    <div class="cart-item-content">
+                        <div class="cart-item-title">
+                            <h4>Seduh Signature</h4>
+                            <p>Rp.30.000</p>
+                        </div>
+                        <div class="cart-item-action">
+                            <button class="cart-btn-kurang">-</button>
+                            <p>2</p>
+                            <button class="cart-btn-tambah">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="cart-item">
+                    <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
+                    <div class="cart-item-content">
+                        <div class="cart-item-title">
+                            <h4>Seduh Signature</h4>
+                            <p>Rp.30.000</p>
+                        </div>
+                        <div class="cart-item-action">
+                            <button class="cart-btn-kurang">-</button>
+                            <p>2</p>
+                            <button class="cart-btn-tambah">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="note-box">
+                <input type="text" placeholder="Tambah catatan untuk dapur (misal : Less sugar, No ice)">
+            </div>
+            <div class="total-row">
+                <p style="color:var(--text-dark)">Total Pembayaran</p>
+                <p style="color:var(--terra)">Rp. 62.000</p>
+            </div>
+            <div class="cta">
+                <button id="btnCta" class="btn-cta">Pesan Sekarang</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
