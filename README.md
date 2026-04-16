@@ -4,6 +4,13 @@ Aplikasi pemesanan menu berbasis web untuk kedai kopi. Dirancang untuk digunakan
 
 ---
 
+## Live Demo
+https://seduh.vercel.app/
+
+## Screenshoot app
+<img width="413" height="844" alt="gambar" src="https://github.com/user-attachments/assets/b7043172-d4f5-4bc8-9bba-d127f7ecf3b7" /> <img width="413" height="843" alt="gambar" src="https://github.com/user-attachments/assets/c7c7d7fd-c088-4185-bdcd-edee8a2e19f8" />
+
+
 ## Fitur
 
 - **Tampilan menu dinamis** — menu dirender dari data JavaScript, lengkap dengan emoji, nama, deskripsi, dan harga
