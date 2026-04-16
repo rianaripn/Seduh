@@ -15,9 +15,9 @@
     <header>
         <div class="header-top">
             <h1>Seduh</h1>
-            <span class="nomor-meja">Meja 1</span>
+            <span id="nomorMeja" class="nomor-meja"></span>
         </div>
-        <p class="header-sub">Senin, 13 April 2026</p>
+        <p id="headerSub" class="header-sub"></p>
     </header>
     <main>
         <section id="promoBar" class="promo-bar">
@@ -25,11 +25,11 @@
                 <h2>Promo Hari Ini</h2>
                 <p>Beli 2 Minuman, gratis snack</p>
             </div>
-            <button id="lihatPromo" class="lihat-promo">Lihat</button>
+            <button id="lihatPromo" class="lihat-promo">Lihat Promo</button>
         </section>
         <section id="filterBar" class="filter-bar">
             <ul>
-                <li>Semua</li>
+                <li class="active">Semua</li>
                 <li>Coffee</li>
                 <li>Non-Coffee</li>
                 <li>Snack</li>
@@ -80,7 +80,7 @@
     <div class="overlay">
         <!-- Isi Overlay -->
     </div>
-    <div class="modal ">
+    <div class="modal">
         <div class="handle-modal">
             <div class="sheet-header">
                 <p>Keranjang Kamu</p>
@@ -127,40 +127,44 @@
             <div class="cta">
                 <button id="btnCta" class="btn-cta">Pesan Sekarang</button>
             </div>
-            <div class="modal-konfirmasi">
-                <div class="modal-konfirmasi-content">
-                    <div class="konfirmasi-header">
-                        <h3>Konfirmasi Pesanan Anda</h3>
-                        <button id="btnTutupKonfirmasi">✕</button>
-                    </div>
-                    <!-- Ringkasan order -->
-                    <div id="ringkasanOrder">
-                        <p>Pesanan Kamu adalah a b c d</p>
-                        <!-- diisi JS nanti -->
-                    </div>
-                    <div class="pilih-metode-bayar-container">
-                        <p>Pilih Metode Pembayaran</p>
-                        <div class="pilih-metode-bayar" >
-                            <button class="qris">QRIS</button>
-                            <button class="cash">Cash</button>
-                        </div>
-                    </div>
-                    
-                    <p class="total-pembayaran">Total belanja kamu adalah : <span id="totalPembayaran">Rp. 0</span> </p>
-                        
-                    <!-- <div class="btn-action-pembayaran">
-                        <button class="lanjutkan">Konfirmasi</button>
-                        <button class="batal">Batalkan</button>
-                    </div> -->
-                    <!-- Metode pembayaran -->
-                    <!-- kamu isi sendiri! -->
-
-                    <!-- Total -->
-                    <!-- kamu isi sendiri! -->
-
-                    <!-- Tombol konfirmasi -->
-                    <!-- kamu isi sendiri! -->
+        </div>
+    </div>
+    <div class="modal-konfirmasi">
+        <div class="modal-konfirmasi-content">
+            <div class="konfirmasi-header">
+                <h3>Konfirmasi Pesanan Anda</h3>
+                <button id="btnTutupKonfirmasi">✕</button>
+            </div>
+            <!-- Ringkasan order -->
+            <div id="ringkasanOrder"> 
+                <h4>Ringkasan Pesanan : </h4>
+                <ul>
+                    <li id="noMejaKonfirmasi"> Meja 1</li>
+                    <li id="listPesanan"></li>
+                    <li id="catatanOrder"></li> 
+                </ul> 
+            </div>
+            <div class="pilih-metode-bayar-container">
+                <p>Pilih Metode Pembayaran</p>
+                <div class="pilih-metode-bayar" >
+                    <label class="metode-card">
+                        <input type="radio" name="metode" value="qris">
+                        <span>QRIS</span>
+                    </label>
+                    <label class="metode-card">
+                        <input type="radio" name="metode" value="cash">
+                        <span>Cash</span>
+                    </label>
                 </div>
+            </div>
+            <div id="qrContainer" class="qr-container hidden">
+                <img id="qrImage"  src="" alt="QR Code QRIS">
+                <p>Scan Untuk Membayar</p>
+            </div>
+            <p class="total-pembayaran">Total belanja kamu adalah : <span id="totalPembayaran">Rp. 0</span> </p>
+            <div class="btn-action-konfirmasi">
+                <button id="btnKonfirmasi" class="btn-konfirmasi" disabled title="Silahkan lakukan pembayaran terlebih dahulu">Konfirmasi</button>
+                <button class="btn-batal">Batalkan</button>
             </div>
         </div>
     </div>
