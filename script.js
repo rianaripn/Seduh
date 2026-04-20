@@ -1,7 +1,39 @@
 // ============================================================
 // IMPORTS & STATE
 // ============================================================
-import { dataMenu } from "./data/menu.js"
+// import { dataMenu } from "./data/menu.js"
+// ============================================================
+// FUNGSI MENGAMBIL MENU DARI SERVER
+// ============================================================
+
+let dataMenu = [];
+// let keranjang = [];
+async function ambilDataMenuDariServer() {
+    const listProduk = document.getElementById('listProduk');
+    try {
+        const respons = await fetch('http://localhost:5000/api/menu');
+
+        if (!respons.ok) {
+            throw new Error(`Server merespon dengan status: ${respons.status}`);
+        }
+
+        const dataDariServer = await respons.json();
+        dataMenu = dataDariServer;
+
+        renderMenu(dataMenu);
+        updateMenuHighlight();
+    } catch (error) {
+        console.error("Kesalahan Fetch:", error);
+        listProduk.innerHTML = `
+            <div style="text-align:center; padding: 20px; color: #666;">
+                <p><strong>Gagal memuat menu dari server.</strong></p>
+                <p><small>Error: ${error.message}</small></p>
+                <p style="font-size: 12px; margin-top: 10px;">Pastikan backend (Node.js) menyala di port 5000 dan jalankan project ini menggunakan Live Server.</p>
+            </div>`;
+    }
+}
+
+
 let keranjang = []
 
 // ============================================================
@@ -12,7 +44,6 @@ const modal = document.querySelector('.modal')
 const overlay = document.querySelector('.overlay')
 const cartsItems = document.querySelector('.cart-items')
 const totalPembelanjaan = document.getElementById('totalPembelanjaan')
-const inputCatatan = document.querySelector('.note-box input')
 const btnCta = document.getElementById('btnCta')
 const modalKonfirmasi = document.querySelector('.modal-konfirmasi')
 const ringkasanOrder = document.getElementById('ringkasanOrder')
@@ -47,24 +78,21 @@ elMeja.textContent = 'Meja ' + noMeja
 // ============================================================
 function renderMenu(data) {
     const listProduk = document.getElementById('listProduk')
-    listProduk.innerHTML = ''
-    data.forEach(function (item) {
-        listProduk.innerHTML += `
-    <div class="menu-wrapper">
-        <div class="menu-img">${item.emoji}</div>
-        <div class="menu-content">
-            <div class="menu-title">
-                <h3>${item.nama}</h3>
-                <p>${item.deskripsi}</p>
-            </div>
-            <div class="menu-action">
-                <p>${item.harga.toLocaleString('id-ID')}</p>
-                <button class="btn-tambah">+</button>
+    listProduk.innerHTML = data.map(item => `
+        <div class="menu-wrapper" data-nama="${item.nama}">
+            <div class="menu-img">${item.emoji}</div>
+            <div class="menu-content">
+                <div class="menu-title">
+                    <h3>${item.nama}</h3>
+                    <p>${item.deskripsi}</p>
+                </div>
+                <div class="menu-action">
+                    <p>Rp ${item.harga.toLocaleString('id-ID')}</p>
+                    <button class="btn-tambah">+</button>
+                </div>
             </div>
         </div>
-    </div>
-    `
-    })
+    `).join('')
 }
 
 // ============================================================
@@ -100,10 +128,11 @@ function hitungTotal() {
 document.getElementById('listProduk').addEventListener('click', function (e) {
     if (e.target.classList.contains('btn-tambah')) {
         const wrapper = e.target.closest('.menu-wrapper')
-        const nama = wrapper.querySelector('h3').firstChild.textContent.trim()
-        const hargaRaw = wrapper.querySelector('.menu-action p').textContent
-        const harga = parseInt(hargaRaw.replace(/\./g, ''))
-        const emoji = wrapper.querySelector('.menu-img').textContent
+        const nama = wrapper.dataset.nama
+
+        // Mengambil data asli dari dataMenu berdasarkan nama untuk menghindari DOM scraping
+        const itemData = dataMenu.find(item => item.nama === nama)
+        if (!itemData) return
 
         const itemAdaKah = keranjang.find(function (item) {
             return item.nama === nama
@@ -111,7 +140,13 @@ document.getElementById('listProduk').addEventListener('click', function (e) {
         if (itemAdaKah) {
             itemAdaKah.qty += 1
         } else {
-            keranjang.push({ nama, harga, emoji, qty: 1 })
+            keranjang.push({
+                nama: itemData.nama,
+                harga: itemData.harga,
+                emoji: itemData.emoji,
+                qty: 1,
+                catatan: ''
+            })
         }
         renderKeranjang()
         updateCartBar()
@@ -150,7 +185,7 @@ function updateCartBar() {
 function updateMenuHighlight() {
     const semuaMenu = document.querySelectorAll('.menu-wrapper')
     semuaMenu.forEach(function (menu) {
-        const nama = menu.querySelector('h3').firstChild.textContent.trim()
+        const nama = menu.dataset.nama
         const itemAdaKah = keranjang.find(function (item) {
             return item.nama === nama
         })
@@ -177,25 +212,25 @@ function updateMenuHighlight() {
 // beserta tombol aksi dan total harga.
 // ============================================================
 function renderKeranjang() {
-    cartsItems.innerHTML = ``
-    keranjang.forEach(function (item) {
-        cartsItems.innerHTML += `
+    cartsItems.innerHTML = keranjang.map(item => `
         <div class="cart-item">
             <div class="menu-img">${item.emoji}</div>
             <div class="cart-item-content">
                 <div class="cart-item-title">
                     <h4>${item.nama}</h4>
-                    <p>${item.harga}</p>
+                    <p>Rp ${item.harga.toLocaleString('id-ID')}</p>
                 </div>
-            <div class="cart-item-action">
-                <button class="cart-btn-kurang">-</button>
-                <p>${item.qty}</p>
-                <button class="cart-btn-tambah">+</button>
-                <button class="cart-btn-hapus">Hapus Item</button>
+                <div class="cart-item-action">
+                    <button class="cart-btn-kurang">-</button>
+                    <p>${item.qty}</p>
+                    <button class="cart-btn-tambah">+</button>
+                    <button class="cart-btn-hapus">Hapus Item</button>
+                </div>
+                <input type="text" class="cart-item-note" placeholder="Contoh: Gula dikit aja" data-nama="${item.nama}" value="${item.catatan}"
+                style="margin-top: 8px; width: 100%; padding: 4px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px;">
             </div>
-       </div>
-       `
-    })
+        </div>
+    `).join('')
     totalPembelanjaan.textContent = 'Rp ' + hitungTotal().toLocaleString('id-ID')
 }
 
@@ -206,7 +241,7 @@ function renderKeranjang() {
 // ============================================================
 document.querySelector('.cart-items').addEventListener('click', function (e) {
     if (e.target.classList.contains('cart-btn-kurang')) {
-        const nama = e.target.closest('.cart-item').querySelector('h4').textContent
+        const nama = e.target.closest('.cart-item').querySelector('input.cart-item-note').dataset.nama
         const item = keranjang.find(function (i) {
             return i.nama === nama
         })
@@ -221,7 +256,7 @@ document.querySelector('.cart-items').addEventListener('click', function (e) {
         updateMenuHighlight()
     }
     if (e.target.classList.contains('cart-btn-tambah')) {
-        const nama = e.target.closest('.cart-item').querySelector('h4').textContent
+        const nama = e.target.closest('.cart-item').querySelector('input.cart-item-note').dataset.nama
         const item = keranjang.find(function (i) {
             return i.nama === nama
         })
@@ -231,7 +266,7 @@ document.querySelector('.cart-items').addEventListener('click', function (e) {
         updateMenuHighlight()
     }
     if (e.target.classList.contains('cart-btn-hapus')) {
-        const nama = e.target.closest('.cart-item').querySelector('h4').textContent
+        const nama = e.target.closest('.cart-item').querySelector('input.cart-item-note').dataset.nama
         keranjang = keranjang.filter(function (i) {
             return i.nama !== nama
         })
@@ -240,6 +275,24 @@ document.querySelector('.cart-items').addEventListener('click', function (e) {
         updateMenuHighlight()
     }
 })
+// // ============================================================
+// EVENT: Menyimpan catatan pada item
+// ============================================================
+document.querySelector('.cart-items').addEventListener('input', function (e) {
+    if (e.target.classList.contains('cart-item-note')) {
+        const namaMenu = e.target.getAttribute('data-nama')
+        console.log(namaMenu)
+        const item = keranjang.find(function (i) {
+            return i.nama === namaMenu
+        })
+        if (item) {
+            item.catatan = e.target.value
+        }
+    }
+
+})
+
+
 
 // ============================================================
 // TOAST NOTIFICATION
@@ -286,12 +339,6 @@ btnCta.addEventListener('click', function () {
     if (keranjang.length === 0) {
         showToast('Silahkan pilih menu terlebih dahulu!')
     } else {
-        let catatan = inputCatatan.value
-        const dataOrder = {
-            keranjang: keranjang,
-            catatan: catatan,
-            meja: 'Meja ' + noMeja
-        }
         tampilKonfirmasi()
     }
 })
@@ -303,12 +350,16 @@ btnCta.addEventListener('click', function () {
 // ============================================================
 function tampilKonfirmasi() {
     const listPesanan = document.getElementById('listPesanan')
-    const catatanOrder = document.getElementById('catatanOrder')
-    catatanOrder.textContent = inputCatatan.value
+    // const catatanOrder = document.getElementById('catatanOrder')
+    // catatanOrder.textContent = inputCatatan.value
     listPesanan.innerHTML = ''
     keranjang.forEach(function (menu) {
+        // let teksCatatan = menu.catatan !== `` ? `<br><small style="color: gray;">📝 Catatan: ${menu.catatan}</small>` : ''
+        let teksCatatan = menu.catatan !== '' ? `<br><small style="color: gray;">📝 Catatan: ${menu.catatan}</small>` : ''
         listPesanan.innerHTML += `
-                <li>${menu.emoji} ${menu.nama} : ${menu.qty} pcs</li>
+                <li style="margin-bottom: 8px;">${menu.emoji} ${menu.nama} : ${menu.qty} pcs
+                ${teksCatatan}
+                </li>
                 `
     })
     document.getElementById('noMejaKonfirmasi').textContent = 'Meja ' + noMeja
@@ -321,24 +372,67 @@ function tampilKonfirmasi() {
 // EVENT: KONFIRMASI PESANAN
 // Mereset seluruh state aplikasi setelah pesanan dikonfirmasi.
 // ============================================================
-btnKonfirmasi.addEventListener('click', function () {
-    showToast('Pesanan Anda Berhasil, ditunggu ya pesanan nya!')
-    document.querySelector('.note-box input').value = ''
-    modalKonfirmasi.classList.remove('active')
-    modal.classList.remove('active')
-    overlay.classList.remove('active')
-    keranjang = []
-    renderKeranjang()
-    updateCartBar()
-    renderMenu(dataMenu)
-    updateMenuHighlight()
-    document.querySelectorAll('.metode-card input[name="metode"]').forEach(function (radio) {
-        radio.checked = false
-    })
-    qrContainer.classList.add('hidden')
-    clearTimeout(timerKonfirmasi)
-    btnKonfirmasi.disabled = true
-})
+// ============================================================
+// EVENT: KONFIRMASI PESANAN (Mengirim data ke server)
+// ============================================================
+btnKonfirmasi.addEventListener('click', async function () {
+    // 1. Kumpulkan data pesanan
+    const radioTerpilih = document.querySelector('input[name="metode"]:checked');
+
+    if (!radioTerpilih) {
+        showToast('Pilih metode pembayaran terlebih dahulu!');
+        return;
+    }
+    const metodePilihan = radioTerpilih.value;
+
+    const payloadPesanan = {
+        identifier_pelanggan: noMeja,
+        metode_pembayaran: metodePilihan,
+        total_harga: hitungTotal(),
+        items: keranjang
+    };
+
+    try {
+        // 2. Kirim data ke Backend (Node.js) menggunakan fetch
+        // Ubah teks tombol sementara agar pelanggan tahu sistem sedang memproses
+        btnKonfirmasi.textContent = 'Mengirim pesanan...';
+        btnKonfirmasi.disabled = true;
+
+        const respons = await fetch('http://localhost:5000/api/pesanan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payloadPesanan) // Mengubah objek JS menjadi format teks JSON
+        });
+
+        const jawabanServer = await respons.json(); // Membaca balasan dari server
+
+        // 3. Jika berhasil diterima server, tampilkan notifikasi dan reset aplikasi
+        if (jawabanServer.status === 'berhasil') {
+            showToast(`Pesanan ${jawabanServer.id_struk} Berhasil Diterima!`);
+
+            // Proses Reset State (Sama persis seperti kode Anda sebelumnya)
+            modalKonfirmasi.classList.remove('active');
+            modal.classList.remove('active');
+            overlay.classList.remove('active');
+            keranjang = [];
+            renderKeranjang();
+            updateCartBar();
+            renderMenu(dataMenu);
+            updateMenuHighlight();
+            document.querySelectorAll('.metode-card input[name="metode"]').forEach(radio => radio.checked = false);
+            qrContainer.classList.add('hidden');
+            clearTimeout(timerKonfirmasi);
+        }
+    } catch (error) {
+        showToast('Gagal terhubung ke sistem! Pastikan server menyala.');
+        console.error(error);
+    } finally {
+        // Kembalikan teks tombol seperti semula setelah selesai (baik sukses maupun error)
+        btnKonfirmasi.textContent = 'Konfirmasi Pesanan';
+    }
+});
 
 // ============================================================
 // EVENT: PILIH METODE PEMBAYARAN (QRIS / CASH)
@@ -367,9 +461,11 @@ document.querySelector('.pilih-metode-bayar').addEventListener('change', functio
 // Menutup modal konfirmasi dan mereset QR, radio button,
 // timer, serta status tombol konfirmasi.
 // ============================================================
-document.getElementById('lihatPromo').addEventListener('click', function () {
-    showToast('Menu ini masih dalam tahap maintenance!')
-})
+
+
+// document.getElementById('lihatPromo').addEventListener('click', function () {
+//     showToast('Menu ini masih dalam tahap maintenance!')
+// })
 
 document.getElementById('tambahItemCart').addEventListener('click', function () {
     modal.classList.remove('active')
@@ -400,7 +496,6 @@ document.querySelector('.btn-batal').addEventListener('click', function () {
 // INISIALISASI AWAL
 // Render menu dan highlight saat halaman pertama kali dibuka.
 // ============================================================
-renderMenu(dataMenu)
-updateMenuHighlight()
+ambilDataMenuDariServer();
 cartBar.addEventListener('click', renderModal)
 overlay.addEventListener('click', refreshModal)

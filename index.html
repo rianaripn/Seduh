@@ -1,173 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Taruh di <head> HTML, sebelum link style.css -->
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces&family=Plus+Jakarta+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces&family=Plus+Jakarta+Sans:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <title>Seduh</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div id="toast" class="toast">
-        <p>Menu berhasil ditambahkan! ✓</p>
+      <p>Menu berhasil ditambahkan! ✓</p>
     </div>
     <header>
-        <div class="header-top">
-            <h1>Seduh</h1>
-            <span id="nomorMeja" class="nomor-meja"></span>
-        </div>
-        <p id="headerSub" class="header-sub"></p>
+      <div class="header-top">
+        <h1>Seduh</h1>
+        <span id="nomorMeja" class="nomor-meja"></span>
+      </div>
+      <p id="headerSub" class="header-sub"></p>
     </header>
     <main>
-        <section id="promoBar" class="promo-bar">
+      <!-- <section id="promoBar" class="promo-bar">
             <div class="promo-title">
                 <h2>Promo Hari Ini</h2>
                 <p>Beli 2 Minuman, gratis snack</p>
             </div>
             <button id="lihatPromo" class="lihat-promo">Lihat Promo</button>
-        </section>
-        <section id="filterBar" class="filter-bar">
-            <ul>
-                <li class="active">Semua</li>
-                <li>Coffee</li>
-                <li>Non-Coffee</li>
-                <li>Snack</li>
-                <li>Dessert</li>
-            </ul>
-        </section>
-        <section id="listProduk" class="list-produk">
-            <!-- <div class="menu-wrapper">
-                <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
-                <div class="menu-content">
-                    <div class="menu-title">
-                        <h3>Seduh Signature </h3> 
-                        <p>Espresso,oat-milk</p>
-                    </div>
-                    <div class="menu-action">
-                        <p>Rp.30.000</p>
-                        <button class="btn-tambah">+</button>
-                    </div>
-                </div>
-            </div>
-            <div class="menu-wrapper">
-                <img src="https://placehold.co/64x64" alt="Foto Matcha Latte">
-                <div class="menu-content">
-                    <div class="menu-title">
-                        <h3>Matcha Latte</h3>
-                        <p>Matcha premium, susu segar</p>
-                    </div>
-                    <div class="menu-action">
-                        <p>Rp.32.000</p>
-                        <button class="btn-tambah">+</button>
-                    </div>
-                </div>
-            </div> -->
-        </section>
+        </section> -->
+      <section id="filterBar" class="filter-bar">
+        <ul>
+          <li class="active">Semua</li>
+          <li>Coffee</li>
+          <li>Non-Coffee</li>
+          <li>Snack</li>
+          <li>Dessert</li>
+        </ul>
+      </section>
+      <section id="listProduk" class="list-produk"></section>
     </main>
 
     <div class="cart-bar hidden">
-        <div class="cart-content">
-            <div class="lihat-keranjang">
-                <p id="jumlahItem">0</p> 
-                <p>Lihat Keranjang</p>
-            </div>
-            <div class="total-harga">
-                <p id="totalHarga">Rp. 0</p>
-            </div>
+      <div class="cart-content">
+        <div class="lihat-keranjang">
+          <p id="jumlahItem">0</p>
+          <p>Lihat Keranjang</p>
         </div>
+        <div class="total-harga">
+          <p id="totalHarga">Rp. 0</p>
+        </div>
+      </div>
     </div>
     <div class="overlay">
-        <!-- Isi Overlay -->
+      <!-- Isi Overlay -->
+    </div>
+    <div
+      class="modal-promo"
+      style="
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        z-index: 1000;
+        width: 90%;
+        max-width: 350px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      "
+    >
+      <h3>🎉 Promo Hari Ini!</h3>
+      <div
+        style="
+          border: 1px dashed #ff9800;
+          padding: 15px;
+          margin: 15px 0;
+          border-radius: 8px;
+          background-color: #fff9f0;
+        "
+      >
+        <h4 style="color: #ff9800; margin-bottom: 5px">Diskon 10%</h4>
+        <p style="font-size: 14px; color: #555">
+          Dapatkan potongan 10% dengan minimal belanja
+          <strong>Rp 50.000</strong>.
+        </p>
+        <button
+          id="btnKlaimPromo"
+          style="
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            width: 100%;
+          "
+        >
+          Klaim Promo Sekarang
+        </button>
+      </div>
+      <button
+        id="btnTutupPromo"
+        style="
+          padding: 8px 15px;
+          background: transparent;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          width: 100%;
+        "
+      >
+        Tutup
+      </button>
     </div>
     <div class="modal">
-        <div class="handle-modal">
-            <div class="sheet-header">
-                <p>Keranjang Kamu</p>
-                <button id="tambahItemCart" class="cart-btn-tambah-item">+ Tambah Item</button>
-            </div>
-            <div class="cart-items">
-                <!-- <div class="cart-item">
-                    <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
-                    <div class="cart-item-content">
-                        <div class="cart-item-title">
-                            <h4>Seduh Signature</h4>
-                            <p>Rp.30.000</p>
-                        </div>
-                        <div class="cart-item-action">
-                            <button class="cart-btn-kurang">-</button>
-                            <p>2</p>
-                            <button class="cart-btn-tambah">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="cart-item">
-                    <img src="https://placehold.co/64x64" alt="Foto Seduh Signature">
-                    <div class="cart-item-content">
-                        <div class="cart-item-title">
-                            <h4>Seduh Signature</h4>
-                            <p>Rp.30.000</p>
-                        </div>
-                        <div class="cart-item-action">
-                            <button class="cart-btn-kurang">-</button>
-                            <p>2</p>
-                            <button class="cart-btn-tambah">+</button>
-                        </div>
-                    </div>
-                </div> -->
-            
-            </div>
-            <div class="note-box">
-                <input type="text" placeholder="Tambah catatan untuk dapur (misal : Less sugar, No ice)">
-            </div>
-            <div class="total-row">
-                <p style="color:var(--text-dark)">Total Pembayaran</p>
-                <p id="totalPembelanjaan" style="color:var(--terra)">Rp. 0</p>
-            </div>
-            <div class="cta">
-                <button id="btnCta" class="btn-cta">Pesan Sekarang</button>
-            </div>
+      <div class="handle-modal">
+        <div class="sheet-header">
+          <p>Keranjang Kamu</p>
+          <button id="tambahItemCart" class="cart-btn-tambah-item">
+            + Tambah Item
+          </button>
         </div>
+        <div class="cart-items"></div>
+        <div class="total-row">
+          <p style="color: var(--text-dark)">Total Pembayaran</p>
+          <p id="totalPembelanjaan" style="color: var(--terra)">Rp. 0</p>
+        </div>
+        <div class="cta">
+          <button id="btnCta" class="btn-cta">Pesan Sekarang</button>
+        </div>
+      </div>
     </div>
     <div class="modal-konfirmasi">
-        <div class="modal-konfirmasi-content">
-            <div class="konfirmasi-header">
-                <h3>Konfirmasi Pesanan Anda</h3>
-                <button id="btnTutupKonfirmasi">✕</button>
-            </div>
-            <!-- Ringkasan order -->
-            <div id="ringkasanOrder"> 
-                <h4>Ringkasan Pesanan : </h4>
-                <ul>
-                    <li id="noMejaKonfirmasi"> Meja 1</li>
-                    <li id="listPesanan"></li>
-                    <li id="catatanOrder"></li> 
-                </ul> 
-            </div>
-            <div class="pilih-metode-bayar-container">
-                <p>Pilih Metode Pembayaran</p>
-                <div class="pilih-metode-bayar" >
-                    <label class="metode-card">
-                        <input type="radio" name="metode" value="qris">
-                        <span>QRIS</span>
-                    </label>
-                    <label class="metode-card">
-                        <input type="radio" name="metode" value="cash">
-                        <span>Cash</span>
-                    </label>
-                </div>
-            </div>
-            <div id="qrContainer" class="qr-container hidden">
-                <img id="qrImage"  src="" alt="QR Code QRIS">
-                <p>Scan Untuk Membayar</p>
-            </div>
-            <p class="total-pembayaran">Total belanja kamu adalah : <span id="totalPembayaran">Rp. 0</span> </p>
-            <div class="btn-action-konfirmasi">
-                <button id="btnKonfirmasi" class="btn-konfirmasi" disabled title="Silahkan lakukan pembayaran terlebih dahulu">Konfirmasi</button>
-                <button class="btn-batal">Batalkan</button>
-            </div>
+      <div class="modal-konfirmasi-content">
+        <div class="konfirmasi-header">
+          <h3>Konfirmasi Pesanan Anda</h3>
+          <button id="btnTutupKonfirmasi">✕</button>
         </div>
+        <!-- Ringkasan order -->
+        <div id="ringkasanOrder">
+          <h4>Ringkasan Pesanan :</h4>
+          <ul>
+            <li id="noMejaKonfirmasi">Meja 1</li>
+            <li id="listPesanan"></li>
+            <li id="catatanOrder"></li>
+          </ul>
+        </div>
+        <div class="pilih-metode-bayar-container">
+          <p>Pilih Metode Pembayaran</p>
+          <div class="pilih-metode-bayar">
+            <label class="metode-card">
+              <input type="radio" name="metode" value="qris" />
+              <span>QRIS</span>
+            </label>
+            <label class="metode-card">
+              <input type="radio" name="metode" value="cash" />
+              <span>Cash</span>
+            </label>
+          </div>
+        </div>
+        <div id="qrContainer" class="qr-container hidden">
+          <img id="qrImage" src="" alt="QR Code QRIS" />
+          <p>Scan Untuk Membayar</p>
+        </div>
+        <p class="total-pembayaran">
+          Total belanja kamu adalah : <span id="totalPembayaran">Rp. 0</span>
+        </p>
+        <div class="btn-action-konfirmasi">
+          <button
+            id="btnKonfirmasi"
+            class="btn-konfirmasi"
+            disabled
+            title="Silahkan lakukan pembayaran terlebih dahulu"
+          >
+            Konfirmasi
+          </button>
+          <button class="btn-batal">Batalkan</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="script.js"></script>
-</body>
+  </body>
 </html>
