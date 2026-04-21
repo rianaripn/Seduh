@@ -1,12 +1,21 @@
 {
   "name": "seduh-backend",
   "version": "1.0.0",
-  "description": "Backend API for Seduh Cafe App",
+  "description": "Backend API untuk aplikasi pemesanan kafe Seduh",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
+  "keywords": [
+    "api",
+    "express",
+    "sqlite",
+    "cafe",
+    "ordering-system"
+  ],
+  "author": "Nama Anda",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
