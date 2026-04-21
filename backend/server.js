@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
+const PDFDocument = require('pdfkit');
 
 const app = express();
 const PORT = 5000;
@@ -294,7 +295,137 @@ app.post('/api/pesanan', (req, res) => {
 });
 
 // ==========================================
-// 3. MENYALAKAN SERVER
+// 3. GENERATE PDF
+// ==========================================
+
+function generateStrukPDF(pesanan, res) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Struk-${pesanan.id_struk}.pdf"`);
+
+    const doc = new PDFDocument({
+        size: 'A6',
+        margin: 15
+    });
+
+    doc.pipe(res);
+
+    const lebarHalaman = doc.page.width - 30;
+    let y = 15; // Posisi Y awal
+
+    // ===== HEADER =====
+    doc.fontSize(16).font('Helvetica-Bold').text('S E D U H', 15, y, { align: 'center' });
+    y += 20;
+
+    doc.fontSize(9).font('Helvetica').text('Jl. Kopi No. 123', 15, y, { align: 'center' });
+    y += 12;
+
+    doc.fontSize(9).text('IG: @seduhcafe', 15, y, { align: 'center' });
+    y += 20;
+
+    doc.fontSize(11).font('Helvetica-Bold').text('=== STRUK PEMBAYARAN ===', 15, y, { align: 'center' });
+    y += 20;
+
+    // ===== INFO PESANAN =====
+    doc.fontSize(9).font('Helvetica');
+    doc.text(`No. Pesanan  : ${pesanan.id_struk}`, 15, y);
+    y += 14;
+    doc.text(`Meja         : ${pesanan.identifier_pelanggan}`, 15, y);
+    y += 14;
+    doc.text(`Waktu        : ${pesanan.waktu}`, 15, y);
+    y += 14;
+    doc.text(`Metode Bayar : ${pesanan.metode_pembayaran.toUpperCase()}`, 15, y);
+    y += 20;
+
+    // ===== GARIS PEMISAH =====
+    doc.moveTo(15, y).lineTo(lebarHalaman + 15, y).stroke();
+    y += 15;
+
+    // ===== HEADER TABEL =====
+    doc.font('Helvetica-Bold').text('Item', 15, y);
+    doc.text('Harga', lebarHalaman - 40, y);
+    y += 15;
+    doc.font('Helvetica');
+
+    // ===== DAFTAR ITEM =====
+    pesanan.items.forEach((item) => {
+        const totalItem = item.harga * item.qty;
+        const teksItem = `• ${item.nama} (x${item.qty})`;
+        const teksHarga = `Rp ${totalItem.toLocaleString('id-ID')}`;
+
+        doc.text(teksItem, 15, y);
+        doc.text(teksHarga, lebarHalaman - doc.widthOfString(teksHarga) + 15, y);
+        y += 14;
+
+        // Catatan
+        if (item.catatan && item.catatan.trim() !== '') {
+            doc.fontSize(8).font('Helvetica-Oblique')
+                .text(`   Catatan: ${item.catatan}`, 20, y);
+            y += 12;
+            doc.fontSize(9).font('Helvetica');
+        }
+    });
+
+    y += 5;
+
+    // ===== GARIS PEMISAH =====
+    doc.moveTo(15, y).lineTo(lebarHalaman + 15, y).stroke();
+    y += 15;
+
+    // ===== TOTAL =====
+    doc.font('Helvetica-Bold').fontSize(11);
+    const teksTotalLabel = 'TOTAL';
+    const teksTotalNilai = `Rp ${pesanan.total_harga.toLocaleString('id-ID')}`;
+
+    doc.text(teksTotalLabel, 15, y);
+    doc.text(teksTotalNilai, lebarHalaman - doc.widthOfString(teksTotalNilai) + 15, y);
+    y += 25;
+
+    // ===== FOOTER =====
+
+    doc.fontSize(12).font('Helvetica-Bold').text('TERIMA KASIH', 15, y, { align: 'center' });
+    y += 16;
+
+    doc.fontSize(9).font('Helvetica').text('Sampai jumpa kembali', 15, y, { align: 'center' });
+    y += 20;
+
+    doc.fontSize(7).text('*** Simpan struk ini sebagai bukti pembayaran ***', 15, y, { align: 'center' });
+
+    doc.end();
+}
+
+app.get('/api/struk/:id_struk', (req, res) => {
+    const { id_struk } = req.params;
+
+    // 1. Cari pesanan di database
+    db.get(
+        'SELECT * FROM pesanan WHERE id_struk = ?',
+        [id_struk],
+        (err, row) => {
+            if (err) {
+                console.error('❌ Gagal mencari pesanan:', err.message);
+                res.status(500).json({ status: 'gagal', pesan: 'Gagal mencari pesanan.' });
+                return;
+            }
+
+            if (!row) {
+                res.status(404).json({ status: 'gagal', pesan: 'Pesanan tidak ditemukan.' });
+                return;
+            }
+
+            // 2. Parse items dari JSON string ke array
+            const pesanan = {
+                ...row,
+                items: JSON.parse(row.items)
+            };
+
+            // 3. Generate PDF
+            generateStrukPDF(pesanan, res);
+        }
+    );
+});
+
+// ==========================================
+// 4. MENYALAKAN SERVER
 // ==========================================
 app.listen(PORT, () => {
     console.log(`✅ Mesin Kasir/Server berjalan di http://localhost:${PORT}`);

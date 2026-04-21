@@ -415,6 +415,7 @@ btnKonfirmasi.addEventListener('click', async function (e) {
         if (jawabanServer.status === 'berhasil') {
             // clearTimeout(timerKonfirmasi);
             showToast(`Pesanan ${jawabanServer.id_struk} Berhasil Diterima!`, 3500);
+            window.location.href = `http://localhost:5000/api/struk/${jawabanServer.id_struk}`;
             modalKonfirmasi.classList.remove('active');
             modal.classList.remove('active');
             overlay.classList.remove('active');
@@ -427,6 +428,7 @@ btnKonfirmasi.addEventListener('click', async function (e) {
             document.querySelectorAll('.metode-card input[name="metode"]').forEach(radio => radio.checked = false);
             qrContainer.classList.add('hidden');
             clearTimeout(timerKonfirmasi);
+
         }
     } catch (error) {
         showToast('Gagal terhubung ke sistem! Pastikan server menyala.');
