@@ -1,18 +1,48 @@
 const express = require('express');
 const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
-const PORT = 5000; // Kita ganti ke port 5000 agar tidak bentrok!
+const PORT = 5000;
 
 // ==========================================
-// 1. MIDDLEWARE (WAJIB DI ATAS)
+// 1. MIDDLEWARE 
 // ==========================================
-app.use(cors()); // Ini satpam yang mengizinkan request dari browser
-app.use(express.json()); // Ini penerjemah teks JSON
+app.use(cors());
+app.use(express.json());
 
+
+// -- KONEKSI DATABASE -- //
+
+const db = new sqlite3.Database('./database/seduh.db', (err) => {
+    if (err) {
+        console.error('❌ Gagal Koneksi ke database: ', err.message)
+    } else {
+        console.log('✅ Terhubung ke database SQLite.');
+    }
+})
+
+// -- TABEL DATABASE -- //
+db.run(`
+    CREATE TABLE IF NOT EXISTS pesanan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_struk TEXT NOT NULL,
+        identifier_pelanggan TEXT NOT NULL,
+        metode_pembayaran TEXT NOT NULL,
+        total_harga INTEGER NOT NULL,
+        items TEXT NOT NULL,
+        waktu TEXT NOT NULL
+    )
+    `, (err) => {
+    if (err) {
+        console.error('❌ Gagal membuat tabel:', err.message)
+    } else {
+        console.log('✅ Tabel "pesanan" siap digunakan.')
+    }
+});
 
 // --- SIMULASI DATABASE MENU ---
-// Anda bisa menyalin isi lengkap dari file data/menu.js asli Anda ke dalam sini
+
 const daftarMenu = [
     {
         nama: 'Seduh Signature',
@@ -128,13 +158,12 @@ const daftarMenu = [
 
 ];
 
+// const daftarPesanan = []
+
 // --- ROUTE / ENDPOINT UNTUK MENGAMBIL MENU ---
 app.get('/api/menu', (req, res) => {
-    // Saat ada pelanggan/aplikasi yang meminta data ke loket ini,
-    // server langsung memberikan daftarMenu dalam format JSON
     res.json(daftarMenu);
 });
-
 
 // ==========================================
 // 2. ROUTING / LOKET PELAYANAN
@@ -143,21 +172,124 @@ app.get('/', (req, res) => {
     res.send('Server Seduh berjalan lancar di Port 5000!');
 });
 
+app.get('/api/pesanan', (req, res) => {
+    db.all('SELECT * FROM pesanan ORDER BY id DESC', (err, rows) => {
+        if (err) {
+            res.status(500).json({
+                status: 'gagal',
+                pesan: 'Gagal mengambil data.'
+            })
+            return
+        }
+        const hasil = rows.map(row => ({
+            ...row,
+            items: JSON.parse(row.items)
+        }))
+        res.json(hasil)
+    })
+})
+
 app.post('/api/pesanan', (req, res) => {
     const dataPesanan = req.body;
 
+    // VALIDASI DATA PESANAN 
+    if (!dataPesanan.items || dataPesanan.items.length === 0) {
+        res.status(400).json({
+            status: 'gagal',
+            pesan: 'Keranjang tidak boleh kosong!'
+        })
+        return;
+    }
+    if (dataPesanan.metode_pembayaran !== 'qris' && dataPesanan.metode_pembayaran !== 'cash') {
+        res.status(400).json({
+            status: 'gagal',
+            pesan: 'Pilih metode pembayaran yang valid!'
+        })
+        return
+    }
+    if (dataPesanan.total_harga <= 0) {
+        res.status(400).json({
+            status: 'gagal',
+            pesan: 'Total harga tidak valid!'
+        })
+        return
+    }
+    if (!dataPesanan.identifier_pelanggan || dataPesanan.identifier_pelanggan <= 0) {
+        res.status(400).json({
+            status: 'gagal',
+            pesan: 'Nomor meja tidak valid!'
+        })
+        return
+    }
+    for (const item of dataPesanan.items) {
+        if (!item.nama || item.nama.trim() === '') {
+            res.status(400).json({
+                status: 'gagal',
+                pesan: 'Nama item tidak boleh kosong!'
+            })
+            return;
+        }
+        if (!item.harga || item.harga <= 0) {
+            res.status(400).json({
+                status: 'gagal',
+                pesan: 'Harga item tidak valid!'
+            })
+            return;
+        }
+        if (!item.qty || item.qty <= 0) {
+            res.status(400).json({
+                status: 'gagal',
+                pesan: 'Jumlah item tidak valid!'
+            })
+            return;
+        }
+    }
+
+    const id_struk = 'ORD-' + Math.floor(Math.random() * 1000);
+    const waktu = new Date().toDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    })
+
+    // -- ITEM PESANAN KERANJANG -- //
+    const itemJSON = JSON.stringify(dataPesanan.items)
+
+    db.run(
+        `INSERT INTO pesanan (id_struk, identifier_pelanggan, metode_pembayaran, total_harga, items, waktu)
+        VALUES (?,?,?,?,?,?)
+        `, [id_struk, dataPesanan.identifier_pelanggan, dataPesanan.metode_pembayaran, dataPesanan.total_harga, itemJSON, waktu],
+        function (err) {
+            if (err) {
+                console.error('❌ Gagal menyimpan pesanan: ', err.message);
+                res.status(500).json({
+                    status: 'gagal',
+                    pesan: 'Gagal menyimpan pesanan ke database.'
+                })
+                return
+            }
+        }
+    )
+
+    // daftarPesanan.push(pesananBaru)
     console.log('\n===================================');
     console.log('📥 PESANAN BARU MASUK!');
+    console.log('ID Struk :', id_struk)
     console.log('Meja/Pelanggan:', dataPesanan.identifier_pelanggan);
     console.log('Metode Pembayaran:', dataPesanan.metode_pembayaran);
-    console.log('Total Harga: Rp', dataPesanan.total_harga);
-    console.log('Daftar Item:', dataPesanan.items);
+    console.log('Total Harga: Rp', dataPesanan.total_harga.toLocaleString('id-ID'));
+    console.log('Daftar Item:')
+    dataPesanan.items.forEach(function (item) {
+        console.log(`- ${item.nama} (${item.qty} x Rp ${item.harga.toLocaleString('id-ID')})`)
+    })
+
     console.log('===================================\n');
 
-    res.json({
+    res.status(201).json({
         status: 'berhasil',
         pesan: 'Pesanan Anda sedang disiapkan oleh barista!',
-        id_struk: 'ORD-' + Math.floor(Math.random() * 1000)
+        id_struk: id_struk
     });
 });
 
