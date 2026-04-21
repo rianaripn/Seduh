@@ -50,6 +50,8 @@ const ringkasanOrder = document.getElementById('ringkasanOrder')
 const qrContainer = document.getElementById('qrContainer')
 const qrImage = document.getElementById('qrImage')
 const btnKonfirmasi = document.getElementById('btnKonfirmasi')
+const konfirmasiBayarContainer = document.getElementById('konfirmasiBayarContainer');
+const btnSudahBayar = document.getElementById('btnSudahBayar');
 let timerKonfirmasi
 
 // ============================================================
@@ -304,7 +306,7 @@ function showToast(pesan) {
     toast.classList.add('active')
     setTimeout(function () {
         toast.classList.remove('active')
-    }, 1500)
+    }, 5000)
 }
 
 // ============================================================
@@ -375,7 +377,8 @@ function tampilKonfirmasi() {
 // ============================================================
 // EVENT: KONFIRMASI PESANAN (Mengirim data ke server)
 // ============================================================
-btnKonfirmasi.addEventListener('click', async function () {
+btnKonfirmasi.addEventListener('click', async function (e) {
+    e.preventDefault();
     // 1. Kumpulkan data pesanan
     const radioTerpilih = document.querySelector('input[name="metode"]:checked');
 
@@ -410,9 +413,8 @@ btnKonfirmasi.addEventListener('click', async function () {
 
         // 3. Jika berhasil diterima server, tampilkan notifikasi dan reset aplikasi
         if (jawabanServer.status === 'berhasil') {
-            showToast(`Pesanan ${jawabanServer.id_struk} Berhasil Diterima!`);
-
-            // Proses Reset State (Sama persis seperti kode Anda sebelumnya)
+            // clearTimeout(timerKonfirmasi);
+            showToast(`Pesanan ${jawabanServer.id_struk} Berhasil Diterima!`, 3500);
             modalKonfirmasi.classList.remove('active');
             modal.classList.remove('active');
             overlay.classList.remove('active');
@@ -421,6 +423,7 @@ btnKonfirmasi.addEventListener('click', async function () {
             updateCartBar();
             renderMenu(dataMenu);
             updateMenuHighlight();
+            konfirmasiBayarContainer.classList.add('hidden');
             document.querySelectorAll('.metode-card input[name="metode"]').forEach(radio => radio.checked = false);
             qrContainer.classList.add('hidden');
             clearTimeout(timerKonfirmasi);
@@ -431,6 +434,7 @@ btnKonfirmasi.addEventListener('click', async function () {
     } finally {
         // Kembalikan teks tombol seperti semula setelah selesai (baik sukses maupun error)
         btnKonfirmasi.textContent = 'Konfirmasi Pesanan';
+        btnKonfirmasi.disabled = false;
     }
 });
 
@@ -440,21 +444,40 @@ btnKonfirmasi.addEventListener('click', async function () {
 // Cash: sembunyikan QR, tombol langsung aktif.
 // ============================================================
 document.querySelector('.pilih-metode-bayar').addEventListener('change', function (e) {
+    // Hentikan timer lama (tidak perlu timer lagi)
+    clearTimeout(timerKonfirmasi);
+
+    // Reset: sembunyikan QR, disabled tombol konfirmasi
+    qrContainer.classList.add('hidden');
+    btnKonfirmasi.disabled = true;
+
     if (e.target.value === 'qris') {
-        showToast('Silahkan melakukan pembayaran melalui QR Code ini')
-        qrContainer.classList.remove('hidden')
-        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${noMeja}-Rp${hitungTotal()}`
-        btnKonfirmasi.disabled = true
-        timerKonfirmasi = setTimeout(function () {
-            btnKonfirmasi.disabled = false
-        }, 3000)
+        showToast('Silahkan scan QR Code untuk membayar');
+        qrContainer.classList.remove('hidden');
+        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${noMeja}-Rp${hitungTotal()}`;
+
+        // Tampilkan tombol "Saya Sudah Bayar"
+        konfirmasiBayarContainer.classList.remove('hidden');
+
     } else {
-        qrContainer.classList.add('hidden')
-        clearTimeout(timerKonfirmasi)
-        btnKonfirmasi.disabled = false
-        showToast('Silahkan pergi ke kasir untuk melakukan payment')
+        // CASH
+        showToast('Silahkan lakukan pembayaran ke kasir');
+
+        // Tampilkan tombol "Saya Sudah Bayar"
+        konfirmasiBayarContainer.classList.remove('hidden');
     }
-})
+});
+
+btnSudahBayar.addEventListener('click', function () {
+    // Aktifkan tombol konfirmasi
+    btnKonfirmasi.disabled = false;
+
+    // Sembunyikan tombol "Saya Sudah Bayar" (opsional)
+    konfirmasiBayarContainer.classList.add('hidden');
+
+    // Tampilkan notifikasi sukses
+    showToast('✅ Pembayaran berhasil! Silahkan konfirmasi pesanan.');
+});
 
 // ============================================================
 // EVENT: TUTUP MODAL & RESET STATE
@@ -476,6 +499,8 @@ document.getElementById('btnTutupKonfirmasi').addEventListener('click', function
     clearTimeout(timerKonfirmasi)
     modalKonfirmasi.classList.remove('active')
     qrContainer.classList.add('hidden')
+
+    konfirmasiBayarContainer.classList.add('hidden');
     document.querySelectorAll('.metode-card input[name="metode"]').forEach(function (radio) {
         radio.checked = false
     })
