@@ -4,7 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const PDFDocument = require('pdfkit');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // ==========================================
 // 1. MIDDLEWARE 
