@@ -5,7 +5,7 @@
 // ============================================================
 // FUNGSI MENGAMBIL MENU DARI SERVER
 // ============================================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://seduh-production.up.railway.app';
+const API_URL = 'https://seduh-production.up.railway.app';
 let dataMenu = [];
 // let keranjang = [];
 async function ambilDataMenuDariServer() {
