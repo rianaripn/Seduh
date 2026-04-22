@@ -5,14 +5,14 @@
 // ============================================================
 // FUNGSI MENGAMBIL MENU DARI SERVER
 // ============================================================
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://seduh-production.up.railway.app';
 let dataMenu = [];
 // let keranjang = [];
 async function ambilDataMenuDariServer() {
     const listProduk = document.getElementById('listProduk');
     try {
         // const respons = await fetch('http://localhost:5000/api/menu');
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://seduh-production.up.railway.app'; 
+         
         fetch(`${API_URL}/api/menu`)
 
         if (!respons.ok) {
@@ -403,7 +403,7 @@ btnKonfirmasi.addEventListener('click', async function (e) {
         btnKonfirmasi.textContent = 'Mengirim pesanan...';
         btnKonfirmasi.disabled = true;
 
-        const respons = await fetch('http://localhost:5000/api/pesanan', {
+        const respons = await fetch(`${API_URL}/api/pesanan`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -417,7 +417,7 @@ btnKonfirmasi.addEventListener('click', async function (e) {
         if (jawabanServer.status === 'berhasil') {
             // clearTimeout(timerKonfirmasi);
             showToast(`Pesanan ${jawabanServer.id_struk} Berhasil Diterima!`, 3500);
-            window.location.href = `http://localhost:5000/api/struk/${jawabanServer.id_struk}`;
+            window.location.href = `${API_URL}/api/struk/${jawabanServer.id_struk}`;
             modalKonfirmasi.classList.remove('active');
             modal.classList.remove('active');
             overlay.classList.remove('active');
