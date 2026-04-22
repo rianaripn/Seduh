@@ -11,7 +11,9 @@ let dataMenu = [];
 async function ambilDataMenuDariServer() {
     const listProduk = document.getElementById('listProduk');
     try {
-        const respons = await fetch('http://localhost:5000/api/menu');
+        // const respons = await fetch('http://localhost:5000/api/menu');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://seduh-production.up.railway.app'; 
+        fetch(`${API_URL}/api/menu`)
 
         if (!respons.ok) {
             throw new Error(`Server merespon dengan status: ${respons.status}`);
