@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const PDFDocument = require('pdfkit');
 
 const app = express();
@@ -15,32 +16,31 @@ app.use(express.json());
 
 // -- KONEKSI DATABASE -- //
 
-const db = new sqlite3.Database('./database/seduh.db', (err) => {
-    if (err) {
-        console.error('❌ Gagal Koneksi ke database: ', err.message)
-    } else {
-        console.log('✅ Terhubung ke database SQLite.');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl:{
+        rejectUnauthorized: false
     }
 })
 
 // -- TABEL DATABASE -- //
-db.run(`
+pool.query(`
     CREATE TABLE IF NOT EXISTS pesanan (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_struk TEXT NOT NULL,
-        identifier_pelanggan TEXT NOT NULL,
-        metode_pembayaran TEXT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        id_struk VARCHAR(255) NOT NULL,
+        identifier_pelanggan VARCHAR(255) NOT NULL,
+        metode_pembayaran VARCHAR(50) NOT NULL,
         total_harga INTEGER NOT NULL,
         items TEXT NOT NULL,
-        waktu TEXT NOT NULL
-    )
-    `, (err) => {
-    if (err) {
-        console.error('❌ Gagal membuat tabel:', err.message)
-    } else {
-        console.log('✅ Tabel "pesanan" siap digunakan.')
-    }
-});
+        waktu VARCHAR(255) NOT NULL
+    )    
+`)
+    .then(() => {
+        console.log("Database berhasil terhubung!")
+    })
+    .catch((err) => {
+        console.error("Database gagal terhubung!", err.message)
+    });
 
 // --- SIMULASI DATABASE MENU ---
 
@@ -159,8 +159,6 @@ const daftarMenu = [
 
 ];
 
-// const daftarPesanan = []
-
 // --- ROUTE / ENDPOINT UNTUK MENGAMBIL MENU ---
 app.get('/api/menu', (req, res) => {
     res.json(daftarMenu);
@@ -170,27 +168,27 @@ app.get('/api/menu', (req, res) => {
 // 2. ROUTING / LOKET PELAYANAN
 // ==========================================
 app.get('/', (req, res) => {
-    res.send('Server Seduh berjalan lancar di Port 5000!');
+    res.send('Server Seduh berjalan lancar!');
 });
 
-app.get('/api/pesanan', (req, res) => {
-    db.all('SELECT * FROM pesanan ORDER BY id DESC', (err, rows) => {
-        if (err) {
-            res.status(500).json({
-                status: 'gagal',
-                pesan: 'Gagal mengambil data.'
-            })
-            return
-        }
-        const hasil = rows.map(row => ({
+app.get('/api/pesanan', async (req, res) => {
+    try{
+        const result = await pool.query('SELECT * FROM pesanan ORDER BY id DESC');
+        const hasil = result.rows.map(row => ({
             ...row,
-            items: JSON.parse(row.items)
+            items:JSON.parse(row.items)
         }))
         res.json(hasil)
-    })
+    } catch(err){
+        console.error(err);
+        res.status(500).json({
+            status:'gagal',
+            pesan:'Gagal mengambil data'
+        })
+    }
 })
 
-app.post('/api/pesanan', (req, res) => {
+app.post('/api/pesanan', async (req, res) => {
     const dataPesanan = req.body;
 
     // VALIDASI DATA PESANAN 
@@ -257,41 +255,40 @@ app.post('/api/pesanan', (req, res) => {
     // -- ITEM PESANAN KERANJANG -- //
     const itemJSON = JSON.stringify(dataPesanan.items)
 
-    db.run(
-        `INSERT INTO pesanan (id_struk, identifier_pelanggan, metode_pembayaran, total_harga, items, waktu)
-        VALUES (?,?,?,?,?,?)
-        `, [id_struk, dataPesanan.identifier_pelanggan, dataPesanan.metode_pembayaran, dataPesanan.total_harga, itemJSON, waktu],
-        function (err) {
-            if (err) {
-                console.error('❌ Gagal menyimpan pesanan: ', err.message);
-                res.status(500).json({
-                    status: 'gagal',
-                    pesan: 'Gagal menyimpan pesanan ke database.'
-                })
-                return
-            }
-        }
-    )
+    try{
+        await pool.query(
+            `INSERT INTO pesanan (id_struk,identifier_pelanggan,metode_pembayaran,total_harga,items,waktu)
+            VALUES ($1,$2,$3,$4,$5,$6)`,
+            [id_struk, dataPesanan.identifier_pelanggan, dataPesanan.metode_pembayaran, dataPesanan.total_harga, itemJSON, waktu]
+        );
+        console.log('\n📥 PESANAN BARU MASUK! ID:', id_struk);
+        res.status(201).json({
+            status: 'berhasil',
+            pesan: 'Pesanan Anda sedang disiapkan oleh barista!',
+            id_struk: id_struk
+        });
+    } catch(err){
+        console.error('❌ Gagal menyimpan pesanan: ', err.message);
+        res.status(500).json({ status: 'gagal', pesan: 'Gagal menyimpan pesanan ke database.' });
+    }
+    // console.log('\n===================================');
+    // console.log('📥 PESANAN BARU MASUK!');
+    // console.log('ID Struk :', id_struk)
+    // console.log('Meja/Pelanggan:', dataPesanan.identifier_pelanggan);
+    // console.log('Metode Pembayaran:', dataPesanan.metode_pembayaran);
+    // console.log('Total Harga: Rp', dataPesanan.total_harga.toLocaleString('id-ID'));
+    // console.log('Daftar Item:')
+    // dataPesanan.items.forEach(function (item) {
+    //     console.log(`- ${item.nama} (${item.qty} x Rp ${item.harga.toLocaleString('id-ID')})`)
+    // })
 
-    // daftarPesanan.push(pesananBaru)
-    console.log('\n===================================');
-    console.log('📥 PESANAN BARU MASUK!');
-    console.log('ID Struk :', id_struk)
-    console.log('Meja/Pelanggan:', dataPesanan.identifier_pelanggan);
-    console.log('Metode Pembayaran:', dataPesanan.metode_pembayaran);
-    console.log('Total Harga: Rp', dataPesanan.total_harga.toLocaleString('id-ID'));
-    console.log('Daftar Item:')
-    dataPesanan.items.forEach(function (item) {
-        console.log(`- ${item.nama} (${item.qty} x Rp ${item.harga.toLocaleString('id-ID')})`)
-    })
+    // console.log('===================================\n');
 
-    console.log('===================================\n');
-
-    res.status(201).json({
-        status: 'berhasil',
-        pesan: 'Pesanan Anda sedang disiapkan oleh barista!',
-        id_struk: id_struk
-    });
+    // res.status(201).json({
+    //     status: 'berhasil',
+    //     pesan: 'Pesanan Anda sedang disiapkan oleh barista!',
+    //     id_struk: id_struk
+    // });
 });
 
 // ==========================================
@@ -393,37 +390,29 @@ function generateStrukPDF(pesanan, res) {
     doc.end();
 }
 
-app.get('/api/struk/:id_struk', (req, res) => {
+app.get('/api/struk/:id_struk', async (req, res) => {
     const { id_struk } = req.params;
 
-    // 1. Cari pesanan di database
-    db.get(
-        'SELECT * FROM pesanan WHERE id_struk = ?',
-        [id_struk],
-        (err, row) => {
-            if (err) {
-                console.error('❌ Gagal mencari pesanan:', err.message);
-                res.status(500).json({ status: 'gagal', pesan: 'Gagal mencari pesanan.' });
-                return;
-            }
-
-            if (!row) {
-                res.status(404).json({ status: 'gagal', pesan: 'Pesanan tidak ditemukan.' });
-                return;
-            }
-
-            // 2. Parse items dari JSON string ke array
-            const pesanan = {
-                ...row,
-                items: JSON.parse(row.items)
-            };
-
-            // 3. Generate PDF
-            generateStrukPDF(pesanan, res);
+    try {
+        // Cari pesanan menggunakan PostgreSQL ($1)
+        const result = await pool.query('SELECT * FROM pesanan WHERE id_struk = $1', [id_struk]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ status: 'gagal', pesan: 'Pesanan tidak ditemukan.' });
         }
-    );
-});
 
+        const row = result.rows[0];
+        const pesanan = {
+            ...row,
+            items: JSON.parse(row.items)
+        };
+
+        generateStrukPDF(pesanan, res);
+    } catch (err) {
+        console.error('❌ Gagal mencari pesanan:', err.message);
+        res.status(500).json({ status: 'gagal', pesan: 'Gagal mencari pesanan.' });
+    }
+});
 // ==========================================
 // 4. MENYALAKAN SERVER
 // ==========================================
