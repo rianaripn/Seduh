@@ -11,9 +11,7 @@ let dataMenu = [];
 async function ambilDataMenuDariServer() {
     const listProduk = document.getElementById('listProduk');
     try {
-        // const respons = await fetch('http://localhost:5000/api/menu');
-         
-        fetch(`${API_URL}/api/menu`)
+        const respons = await fetch(`${API_URL}/api/menu`)
 
         if (!respons.ok) {
             throw new Error(`Server merespon dengan status: ${respons.status}`);
